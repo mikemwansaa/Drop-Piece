@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Piece Drop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap">
+<script src="pictures/pictures.js"></script>
+<style>
+:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--felt:#2d5c45;--felt2:#244d39;--band:#356b51;--well:#0f2c1e;--cream:#f6ecd2;--back:#547f64;--stroke:#12392a;--gold:#ffd95a;--deep:#1b3d2c}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--felt:#2a5742;--felt2:#214634;--well:#0c2619}}
+:root[data-theme="dark"]{--felt:#2a5742;--felt2:#214634;--well:#0c2619}
+body{margin:0;height:100%;overflow:hidden;color:#fff;font-family:"Lilita One","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;background:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.6px) 0 0/7px 7px,radial-gradient(ellipse at 50% 30%,var(--felt),var(--felt2));overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+[hidden]{display:none!important}
+#app{height:100%;display:flex;flex-direction:column;align-items:center}
+#hd{width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:8px 14px 10px;background:linear-gradient(45deg,rgba(255,255,255,.07) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.07) 75%,transparent 75%) 0 0/24px 24px,var(--band);border-bottom:4px solid #2a5a43;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+.ib{width:46px;height:46px;border-radius:50%;border:0;background:rgba(10,30,20,.55);color:var(--cream);display:grid;place-items:center;position:relative;padding:0;cursor:pointer}
+.ib svg{width:28px;height:28px}.ib:focus-visible,.bt:focus-visible{outline:3px solid var(--gold)}
+#hc{position:absolute;right:-3px;bottom:-3px;width:20px;height:20px;border-radius:50%;background:var(--cream);color:var(--deep);font-size:14px;display:grid;place-items:center}
+#lv{text-align:center;line-height:.92}#lv small{display:block;font-size:20px}#lv b{font-size:44px;font-weight:400}
+.st{paint-order:stroke fill;-webkit-text-stroke:5px var(--stroke);text-shadow:0 3px 0 var(--stroke)}
+#stage{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:10px}
+#piles{display:flex;align-items:flex-end;gap:4px;padding:0 7px;height:117px;box-sizing:border-box}
+.pile{position:relative}
+.pc{position:absolute;left:0;right:0;height:26px;border-radius:8px;border:3px solid var(--cream);box-sizing:border-box;box-shadow:0 2px 3px rgba(0,0,0,.3)}
+.bk,.t.down{background-color:var(--back)!important;background-image:radial-gradient(circle,rgba(255,226,150,.4) 0 1.6px,transparent 2.4px),repeating-linear-gradient(45deg,transparent 0 6px,rgba(0,0,0,.14) 6px 7px),repeating-linear-gradient(-45deg,transparent 0 6px,rgba(0,0,0,.14) 6px 7px)!important;background-size:12px 12px,auto,auto!important;background-position:0 0!important}
+#bd{position:relative;background:var(--well);border-radius:14px;box-shadow:0 0 0 3px #0a1d14,inset 0 2px 8px rgba(0,0,0,.6)}
+.t{position:absolute;box-sizing:border-box;border:3px solid var(--cream);background-origin:border-box;background-clip:border-box;background-repeat:no-repeat;touch-action:none;cursor:grab;transition:left .3s ease-in,top .3s ease-in,transform .2s ease;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.t.drag{z-index:20;transition:none;border-color:var(--gold);box-shadow:0 10px 18px rgba(0,0,0,.5)}
+.t.done{z-index:15;animation:dn .8s both}
+@keyframes dn{40%{transform:scale(1.07);box-shadow:0 0 0 4px var(--gold),0 0 26px var(--gold)}to{transform:scale(1.07);box-shadow:0 0 0 4px var(--gold),0 0 26px var(--gold)}}
+.t.flip{animation:fl .3s}@keyframes fl{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.t.hint{z-index:12;box-shadow:0 0 0 4px var(--gold),0 0 18px var(--gold);animation:hn .6s infinite alternate}@keyframes hn{to{transform:scale(1.06)}}
+.tg{position:absolute;border:3px dashed var(--gold);border-radius:9px;box-sizing:border-box;pointer-events:none;z-index:10}
+.ov{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);z-index:60}
+.card{background:var(--band);border:4px solid var(--cream);border-radius:18px;padding:22px 28px;text-align:center;display:flex;flex-direction:column;gap:12px}
+.card p{margin:0;font-size:30px}
+.bt{font:inherit;font-size:22px;background:var(--gold);color:#3a2a00;border:0;border-radius:14px;padding:9px 24px;box-shadow:0 4px 0 #b88a1c;cursor:pointer}
+#toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(10,30,20,.85);border-radius:12px;padding:8px 16px;z-index:70;font-size:18px}
+</style></head>
+<body>
+<div id="app">
+<div id="hd">
+<button class="ib" id="gear" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3.2" stroke-dasharray="2.4 2.4"/><circle cx="12" cy="12" r="6.2" fill="currentColor"/><circle cx="12" cy="12" r="2.6" fill="#1b3d2c"/></svg></button>
+<div id="lv" class="st"><small>Level</small><b id="lvn">1</b></div>
+<button class="ib" id="hint" aria-label="Hint"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/><rect x="8.5" y="18.2" width="7" height="2.4" rx="1.2" fill="currentColor"/><path d="M12 5.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" fill="#1b3d2c"/></svg><span id="hc">2</span></button>
+</div>
+<div id="stage"><div id="piles"></div><div id="bd"></div></div>
+</div>
+<div class="ov" id="menu" hidden><div class="card"><p class="st">Paused</p><button class="bt" id="mu">Undo</button><button class="bt" id="mr">Restart level</button><button class="bt" id="ms">Sound: on</button><button class="bt" id="ma">Add pictures</button><input type="file" id="fi" accept="image/*" multiple hidden><button class="bt" id="mo">Start over</button><button class="bt" id="mc">Resume</button></div></div>
+<div class="ov" id="win" hidden><div class="card"><p class="st" id="wt"></p><button class="bt" id="nx">Next level</button></div></div>
+<div id="toast" hidden></div>
+<script>
+const $=s=>document.querySelector(s),cl=o=>JSON.parse(JSON.stringify(o)),bd=$('#bd'),pl=$('#piles'),G=4,PAD=7;
+const EM=['🚗','☕','📷','🎸','🕰️','🌻','🏠','🎻','🚲','☎️','🍰','🚂','🌸','🏮'];
+const PAL=[['#ecdcb8','#d58f5c','#42684f'],['#f3cf93','#c9694a','#2e5a60'],['#d9e3c8','#7fa57a','#38573f'],['#f0d9c0','#b9777a','#4a4f6e'],['#e6d0a2','#8d6b4a','#2f4a3d'],['#cfe0e0','#e0a96d','#7a4a3a'],['#f2e2b6','#6fa7a0','#3b4f6b'],['#efd1c3','#cf8f6f','#55633f']];
+const IMG={};EM.push('🍎','🎡','⛵','🦜','🏺','🌷','🎷','🧸','🪁','🍋');let mute=false,SV=1,UP=[],AC,L=1,S,S0,hist=[],hints=2,D=null,Z={w:60,h:78};
+try{const sv=JSON.parse(localStorage.getItem('pd_save')||'{}');SV=Math.max(1,sv.L|0);mute=!!sv.m;UP=JSON.parse(localStorage.getItem('pd_up')||'[]')}catch(e){}
+L=SV;const store=()=>{try{localStorage.setItem('pd_save',JSON.stringify({L:SV,m:mute}))}catch(e){}};
+// sound effects are synthesized, no audio files needed
+const snd=(f,d=.12,t='sine',v=.15,w=0,sl=0)=>{if(mute||!AC)return;const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+w;o.type=t;o.frequency.setValueAtTime(f,s);if(sl)o.frequency.exponentialRampToValueAtTime(sl,s+d);g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d+.02)};
+const SFX={pick:()=>snd(520,.07,'triangle',.1),place:()=>snd(300,.1,'triangle',.18,0,180),merge:()=>{snd(660,.1,'sine',.15);snd(880,.14,'sine',.12,.07)},clear:()=>[523,659,784,1047].forEach((f,i)=>snd(f,.22,'triangle',.16,i*.09)),land:()=>snd(160,.09,'sine',.2,0,90),flip:()=>snd(700,.06,'square',.05,0,1100),win:()=>[523,659,784,1047,1319].forEach((f,i)=>snd(f,.3,'triangle',.18,i*.12)),err:()=>snd(140,.15,'sawtooth',.08)};
+addEventListener('pointerdown',()=>{if(!AC)try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}AC&&AC.state=='suspended'&&AC.resume()},true);
+// each level shifts the picture window by 3, so new pictures appear as you progress (uploaded pictures come first)
+// picture sources: 2 custom pictures per level (the pictures folder, then pictures added in-game), the rest are placeholders
+const PB=72,FOLDER=(window.PICTURES||[]).map(n=>/^(data:|https?:|\/)/.test(n)?n:'pictures/'+n);let PK=[];
+async function load(src){if(src.startsWith('data:'))return src;try{const im=new Image();im.src=src;await im.decode();const c=document.createElement('canvas');c.width=360;c.height=480;const g=c.getContext('2d'),s=Math.max(360/im.width,480/im.height),w=im.width*s,h=im.height*s;g.drawImage(im,(360-w)/2,(480-h)/2,w,h);try{return c.toDataURL('image/jpeg',.88)}catch(e){return src}}catch(e){return null}}
+async function prep(np){const cp=[...FOLDER,...UP],ks=[];for(let j=0;j<Math.min(2,cp.length);j++){const i=((L-1)*2+j)%cp.length,k='c'+i;if(!IMG[k])IMG[k]=await load(cp[i]);if(IMG[k]&&!ks.includes(k))ks.push(k)}
+for(let g=0;ks.length<np;g++)ks.push('b'+(((L-1)*3+g)%PB));PK=ks}
+
+// placeholder pictures: swap art() for real images later (360x480, split into 4 quarters)
+function art(k){if(IMG[k])return IMG[k];if(k[0]=='u')return IMG[k]=UP[+k.slice(1)];const p=+k.slice(1);let sd=p*7919+13;const r=()=>(sd=(sd*9301+49297)%233280)/233280,c=document.createElement('canvas');c.width=360;c.height=480;const g=c.getContext('2d'),P=PAL[(p*3+(p/8|0))%PAL.length],gr=g.createLinearGradient(0,0,0,480);
+gr.addColorStop(0,P[0]);gr.addColorStop(1,P[1]);g.fillStyle=gr;g.fillRect(0,0,360,480);
+g.fillStyle='rgba(255,255,255,.35)';g.beginPath();g.arc(60+r()*240,70+r()*80,34+r()*20,0,7);g.fill();
+[330,400].forEach((y,k)=>{g.fillStyle=P[2];g.globalAlpha=.55+k*.35;g.beginPath();g.moveTo(0,480);g.lineTo(0,y-r()*50);for(let x=60;x<=360;x+=60)g.lineTo(x,y-r()*70);g.lineTo(360,480);g.fill()});g.globalAlpha=1;
+for(let i=0;i<400;i++){g.fillStyle=`rgba(0,0,0,${r()*.07})`;g.fillRect(r()*360,r()*480,2,2)}
+g.font='230px serif';g.textAlign='center';g.textBaseline='middle';g.shadowColor='rgba(0,0,0,.35)';g.shadowBlur=18;g.shadowOffsetY=8;g.fillText(EM[p%EM.length],180,250);
+return IMG[k]=c.toDataURL('image/jpeg',.88)}
+
+// piece id = picture*4 + quarter (0 TL, 1 TR, 2 BL, 3 BR). Neighbours that sit in the right relative spot merge into groups.
+function grp(){const{C,cells}=S,uf={},f=i=>uf[i]==i?i:uf[i]=f(uf[i]),m={},ok=i=>i>=0&&!S.down.includes(i);
+cells.forEach(i=>ok(i)&&(uf[i]=i));
+cells.forEach((a,i)=>{if(!ok(a))return;
+if(i%C<C-1){const b=cells[i+1];if(ok(b)&&b>>2==a>>2&&!(a&1)&&b==a+1){uf[f(a)]=f(b);m[a]=(m[a]|0)|1;m[b]=(m[b]|0)|4}}
+if(i+C<cells.length){const b=cells[i+C];if(ok(b)&&b>>2==a>>2&&!(a&2)&&b==a+2){uf[f(a)]=f(b);m[a]=(m[a]|0)|2;m[b]=(m[b]|0)|8}}});
+const root={},mem={};for(const i in uf){const r=f(+i);root[i]=r;(mem[r]=mem[r]||[]).push(+i)}return{root,mem,m}}
+
+// full board at the start; the deck holds the rest of the pieces in picture order, so a finishable picture is always on the board
+async function mk(){const C=L<3?4:L<6?5:6,R=5,N=C*R,np=Math.min((N>>2)+2+L,14),sh=a=>{for(let i=a.length;i>1;){const j=Math.random()*i|0;i--;[a[i],a[j]]=[a[j],a[i]]}return a};await prep(np);
+for(let t=0;t<30;t++){const a=[...Array(np*4).keys()],cells=sh(a.slice(0,N)),
+q=a.slice(N).map(id=>[(id>>2)+Math.random()*.9,id]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]),pc=Array(C).fill(0);q.forEach((_,i)=>pc[i%C]++);
+const hid=sh(cells.filter(id=>id>>2>=2)).slice(0,L<2?0:Math.min(L+1,6));
+S={C,R,np,cells,q,pc,hid,down:[...hid],done:0,lock:0};if(!Object.values(grp().mem).some(m=>m.length==4))break}
+S0=cl(S);hist=[];hints=2;$('#hc').textContent=2;$('#win').hidden=true;$('#menu').hidden=true;
+bd.innerHTML='';for(let p=0;p<np;p++)bd.style.setProperty('--p'+p,`url(${art(PK[p])})`);
+for(let id=0;id<np*4;id++){const e=document.createElement('div');e.className='t';e.dataset.id=id;e.style.backgroundImage=`var(--p${id>>2})`;e.style.display='none';bd.append(e)}
+lay();render()}
+
+function lay(){const{C,R}=S,vw=Math.min(innerWidth,480),pt=parseFloat(getComputedStyle(document.documentElement).paddingTop)||0,av=innerHeight-$('#hd').offsetHeight-155-pt*2;
+let w=Math.floor((vw-20-2*PAD-G*(C-1))/C);if(R*w*1.3+G*(R-1)+2*PAD>av)w=Math.floor((av-G*(R-1)-2*PAD)/(R*1.3));w=Math.max(34,w);Z={w,h:Math.round(w*1.3)}}
+const tile=id=>bd.querySelector(`[data-id="${id}"]`);
+
+function render(fresh={}){const{C,R}=S,{w,h}=Z,g=grp(),pos={};S.cells.forEach((id,i)=>id>=0&&(pos[id]=i));
+$('#lvn').textContent=L;bd.style.width=C*w+(C-1)*G+2*PAD+'px';bd.style.height=R*h+(R-1)*G+2*PAD+'px';pl.style.width=bd.style.width;
+pl.innerHTML=S.pc.map(n=>{const s=Math.min(n,13);return`<div class="pile" style="width:${w}px;height:${s?(s-1)*7+26:0}px">`+Array.from({length:s},(_,i)=>`<div class="pc bk" style="top:${i*7}px"></div>`).join('')+'</div>'}).join('');
+for(const el of bd.querySelectorAll('.t')){const id=+el.dataset.id,i=pos[id];
+if(i==null){el.style.display='none';el.className='t';el.style.transform='';continue}
+const r=i/C|0,c=i%C,m=g.m[id]|0,x=PAD+c*(w+G),y=PAD+r*(h+G),was=el.style.display=='none',B=3,Q=9;
+el.style.display='block';el.style.width=w+(m&1?G:0)+'px';el.style.height=h+(m&2?G:0)+'px';
+el.style.borderWidth=`${m&8?0:B}px ${m&1?0:B}px ${m&2?0:B}px ${m&4?0:B}px`;
+el.style.borderRadius=`${m&12?0:Q}px ${m&9?0:Q}px ${m&3?0:Q}px ${m&6?0:Q}px`;
+el.style.backgroundSize=`${2*w+G}px ${2*h+G}px`;el.style.backgroundPosition=`${-(id&1)*(w+G)}px ${-((id>>1)&1)*(h+G)}px`;
+el.classList.toggle('down',S.down.includes(id));
+if(was){el.style.transition='none';el.style.left=x+'px';el.style.top=(id in fresh?-h*.75:y)+'px';el.offsetWidth;el.style.transition=''}
+el.style.transitionDelay=id in fresh?fresh[id]*.13+'s':'0s';el.style.left=x+'px';el.style.top=y+'px'}}
+
+// gravity: every piece or merged group falls as one block until it rests on something
+function settle(){const{C,R,cells}=S;for(let go=1;go;){go=0;const g=grp(),seen=new Set(),bl=[];
+cells.forEach(id=>{if(id<0||seen.has(id))return;const m=g.root[id]!=null?g.mem[g.root[id]]:[id];m.forEach(i=>seen.add(i));bl.push(m)});
+bl.sort((a,b)=>Math.max(...b.map(i=>cells.indexOf(i)))-Math.max(...a.map(i=>cells.indexOf(i))));
+for(const m of bl){const ix=m.map(i=>cells.indexOf(i));if(ix.every(i=>i+C<C*R&&(cells[i+C]<0||m.includes(cells[i+C])))){ix.forEach(i=>cells[i]=-1);ix.forEach((i,k)=>cells[i+C]=m[k]);go=1}}}}
+// deck cards fall into the empty cells at the top of each column, face-down
+function refill(){const{C,R,cells}=S,f={};let n=0;for(let c=0;c<C&&S.q.length;c++){let k=0;while(k<R&&cells[k*C+c]<0)k++;for(let r=k-1;r>=0&&S.q.length;r--){const id=S.q.shift();cells[r*C+c]=id;S.down.push(id);f[id]=n++%6;const m=S.pc[c]>0?c:S.pc.indexOf(Math.max(...S.pc));S.pc[m]--}}return f}
+const snap=()=>cl({cells:S.cells,q:S.q,pc:S.pc,hid:S.hid,down:S.down,done:S.done});
+const flip=ids=>{ids.length&&SFX.flip();ids.forEach(i=>{const e=tile(i);e.classList.add('flip');setTimeout(()=>e.classList.remove('flip'),320)})};
+// clear a finished picture: glow, remove, flip hidden neighbours, gravity, then the deck drops in and flips after landing
+function check(){const g=grp(),r=Object.keys(g.mem).find(k=>g.mem[k].length==4);if(r==null)return;const ids=g.mem[r],lv=S;S.lock=1;ids.forEach(i=>tile(i).classList.add('done'));SFX.clear();
+setTimeout(()=>{if(S!==lv)return;const{C,R,cells}=S,cs=new Set(ids.map(i=>cells.indexOf(i))),fl=[];
+cs.forEach(i=>[i%C?i-1:-1,i%C<C-1?i+1:-1,i>=C?i-C:-1,i+C<C*R?i+C:-1].forEach(j=>{if(j>=0&&!cs.has(j)&&S.hid.includes(cells[j]))fl.push(cells[j])}));
+ids.forEach(i=>cells[cells.indexOf(i)]=-1);S.done++;S.hid=S.hid.filter(i=>!fl.includes(i));S.down=S.down.filter(i=>!fl.includes(i));
+settle();render();flip(fl);
+if(S.done==S.np){$('#wt').textContent='Level '+L+' complete';$('#win').hidden=false;SV=L+1;store();SFX.win();return}
+setTimeout(()=>{if(S!==lv)return;const f=refill(),nw=Object.keys(f).map(Number);render(f);if(nw.length)setTimeout(SFX.land,380);
+setTimeout(()=>{if(S!==lv)return;S.down=S.down.filter(i=>S.hid.includes(i));render();flip(nw);S.lock=0;check()},950)},520)},850)}
+
+// drag: a piece moves into empty cells, a merged group moves as one shape, a single piece swaps with another single piece
+function swp(col,row){if(D.ids.length>1||col<0||col>=S.C||row<0||row>=S.R)return null;const j=row*S.C+col,o=S.cells[j];if(o<0||S.down.includes(o))return null;const g=grp();if(g.mem[g.root[o]].length>1)return null;return{sw:[S.cells.indexOf(D.id),j]}}
+function target(dc,dr,col,row){const{C,R,cells}=S;if(!dc&&!dr)return null;const mv=[];
+for(const id of D.ids){const i=cells.indexOf(id),c=i%C+dc,r=(i/C|0)+dr;if(c<0||c>=C||r<0||r>=R)return swp(col,row);const j=r*C+c;if(cells[j]>=0&&!D.ids.includes(cells[j]))return swp(col,row);mv.push([i,j,id])}return{mv}}
+function tg(js){bd.querySelectorAll('.tg').forEach(n=>n.remove());js.forEach(j=>{const d=document.createElement('div'),{w,h}=Z;d.className='tg';d.style.cssText=`left:${PAD+j%S.C*(w+G)}px;top:${PAD+(j/S.C|0)*(h+G)}px;width:${w}px;height:${h}px`;bd.append(d)})}
+function clearHint(){bd.querySelectorAll('.hint').forEach(n=>n.classList.remove('hint'));tg([])}
+bd.addEventListener('pointerdown',e=>{const el=e.target.closest('.t');if(!el||S.lock||D||el.classList.contains('down'))return;clearHint();SFX.pick();
+const id=+el.dataset.id,g=grp();D={id,ids:g.mem[g.root[id]],sx:e.clientX,sy:e.clientY,i:S.cells.indexOf(id),ok:null};bd.setPointerCapture(e.pointerId);D.ids.forEach(i=>tile(i).classList.add('drag'))});
+bd.addEventListener('pointermove',e=>{if(!D)return;const dx=e.clientX-D.sx,dy=e.clientY-D.sy,{w,h}=Z,C=S.C,r0=D.i/C|0,c0=D.i%C;if(Math.hypot(dx,dy)>8)D.mv=1;
+D.ids.forEach(i=>tile(i).style.transform=`translate(${dx}px,${dy}px) scale(1.04)`);
+const col=Math.floor((c0*(w+G)+w/2+dx+G/2)/(w+G)),row=Math.floor((r0*(h+G)+h/2+dy+G/2)/(h+G));
+D.ok=target(col-c0,row-r0,col,row);tg(D.ok?D.ok.mv?D.ok.mv.map(m=>m[1]):[D.ok.sw[1]]:[])});
+function up(){if(!D)return;const d=D;D=null;d.ids.forEach(i=>{const e=tile(i);e.classList.remove('drag');e.style.transform=''});tg([]);
+const gp=()=>Object.values(grp().mem).reduce((n,m)=>n+(m.length>1?m.length:0),0),b0=gp();
+if(d.ok){hist.push(snap());const c=S.cells;
+if(d.ok.mv){d.ok.mv.forEach(m=>c[m[0]]=-1);d.ok.mv.forEach(m=>c[m[1]]=m[2])}else{const[a,b]=d.ok.sw;[c[a],c[b]]=[c[b],c[a]]}}
+render();if(d.ok){gp()>b0?SFX.merge():SFX.place()}else if(d.mv)SFX.err();check()}
+bd.addEventListener('pointerup',up);bd.addEventListener('pointercancel',()=>{D&&(D.ok=null);up()});
+
+function toast(t){const n=$('#toast');n.textContent=t;n.hidden=false;clearTimeout(n.t);n.t=setTimeout(()=>n.hidden=true,1700)}
+function hint(){if(S.lock||D)return;if(!hints)return toast('No hints left');const g=grp(),{C,R,cells}=S;let best=null,bs=0;
+cells.forEach((a,i)=>{if(a<0||S.down.includes(a))return;const sz=g.mem[g.root[a]].length;
+[[a^1,(a&1)?-1:1,0],[a^2,0,(a&2)?-1:1]].forEach(([b,dc,dr])=>{const c=i%C+dc,r=(i/C|0)+dr;if(c<0||c>=C||r<0||r>=R)return;const j=r*C+c,bi=cells.indexOf(b);
+if(bi<0||bi==j||S.down.includes(b)||g.mem[g.root[b]].length>1)return;const o=cells[j];if(o>=0&&(g.mem[g.root[o]].length>1||S.down.includes(o)))return;if(sz>bs){bs=sz;best={b,j}}})});
+if(!best)return toast('No hint available');hints--;SFX.merge();$('#hc').textContent=hints;clearHint();tile(best.b).classList.add('hint');tg([best.j]);setTimeout(clearHint,3500)}
+function undo(){if(!hist.length||S.lock)return;const h=hist.pop();Object.assign(S,h);clearHint();render()}
+$('#hint').onclick=hint;$('#gear').onclick=()=>$('#menu').hidden=false;$('#mc').onclick=()=>$('#menu').hidden=true;
+$('#mu').onclick=()=>{undo();$('#menu').hidden=true};
+$('#mr').onclick=()=>{S=cl(S0);hist=[];hints=2;$('#hc').textContent=2;$('#menu').hidden=true;render()};
+$('#nx').onclick=()=>{$('#win').hidden=true;L++;mk()};
+addEventListener('resize',()=>{if(S){lay();render()}});
+$('#ms').onclick=()=>{mute=!mute;$('#ms').textContent='Sound: '+(mute?'off':'on');store()};
+$('#mo').onclick=()=>{SV=1;L=1;store();mk()};
+$('#ma').onclick=()=>$('#fi').click();
+$('#fi').onchange=async e=>{let n=0;for(const f of e.target.files){try{const u=URL.createObjectURL(f),im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=360;c.height=480;const g=c.getContext('2d'),s=Math.max(360/im.width,480/im.height),w=im.width*s,h=im.height*s;g.drawImage(im,(360-w)/2,(480-h)/2,w,h);UP.push(c.toDataURL('image/jpeg',.82));n++;URL.revokeObjectURL(u)}catch(x){}}
+try{localStorage.setItem('pd_up',JSON.stringify(UP))}catch(x){UP.length-=n;n=0;toast('Storage is full')}
+e.target.value='';$('#menu').hidden=true;if(n)toast(n+' added. They appear in the next levels.')};
+$('#ms').textContent='Sound: '+(mute?'off':'on');mk();
+</script>
+</body></html>
